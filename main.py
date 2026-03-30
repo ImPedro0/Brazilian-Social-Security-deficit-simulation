@@ -55,6 +55,8 @@ resultados = []
 a_t = 0.65
 limite_max = 0.75
 
+#Equações
+
 for ano in range(ano_inicio, ano_fim + 1):
     taxas_t = df_inss[df_inss.iloc[:, 0] == ano].iloc[0]
     
@@ -71,12 +73,12 @@ for ano in range(ano_inicio, ano_fim + 1):
     
     a_t = min(a_t, limite_max)
 
-    R_t = R_t_minus_1 * (1 + Cms_t + I_t)
+    R_t = R_t_menos_1 * (1 + Cms_t + I_t)
     
-    D_t = D_t_minus_1 * (1 + Cd_t + (a_t * rmin_t) + ((1 - a_t) * rb_t) + I_t)
+    D_t = D_t_menos_1 * (1 + Cd_t + (a_t * rmin_t) + ((1 - a_t) * rb_t) + I_t)
     
     NFin_t = D_t - R_t
-    PIB_t = PIB_t_minus_1 * (1 + Cpib_t + I_t)
+    PIB_t = PIB_t_menos_1 * (1 + Cpib_t + I_t)
     NFin_pct_pib = NFin_t / PIB_t
     
     resultados.append({
@@ -100,12 +102,14 @@ df_projecao = pd.DataFrame(resultados)
 plt.figure(figsize=(14, 6))
 
 #Evolução do Déficit Nominal
+
 plt.subplot(1, 2, 1)
-plt.plot(df_projecao['Ano'], df_projecao['Deficit (NFin)'], marker='o', color='red', linewidth=2)
+plt.plot(df_projecao['Ano'], df_projecao['Deficit (NFin)'] / 1000000, marker='o', color='red', linewidth=2)
 plt.title('Projeção do Déficit do INSS (2026 - 2060)')
 plt.xlabel('Ano')
-plt.ylabel('Necessidade de Financiamento (R$)')
+plt.ylabel('Déficit (em R$ Trilhões)')
 plt.grid(True, linestyle='--', alpha=0.7)
+plt.ticklabel_format(style='plain', axis='y')
 
 #Déficit como % do PIB
 
@@ -118,5 +122,3 @@ plt.grid(True, linestyle='--', alpha=0.7)
 
 plt.tight_layout()
 plt.show()
-
-print("Projeção finalizada e gráficos gerados!")
