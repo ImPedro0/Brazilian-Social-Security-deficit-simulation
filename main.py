@@ -46,9 +46,9 @@ pop_idosa_serie.index = pop_idosa_serie.index.astype(int)
 
 rgps_2025 = df_rgps[df_rgps.iloc[:, 0] == 2025].iloc[0]
 
-R_t_minus_1 = rgps_2025['Receita']
-D_t_minus_1 = rgps_2025['Despesa']
-PIB_t_minus_1 = rgps_2025['PIB']
+R_t_menos_1 = rgps_2025['Receita']
+D_t_menos_1 = rgps_2025['Despesa']
+PIB_t_menos_1 = rgps_2025['PIB']
 
 resultados = []
 
@@ -91,9 +91,9 @@ for ano in range(ano_inicio, ano_fim + 1):
         'Proporção Sal. Mínimo (a)': a_t * 100
     })
     
-    R_t_minus_1 = R_t
-    D_t_minus_1 = D_t
-    PIB_t_minus_1 = PIB_t
+    R_t_menos_1 = R_t
+    D_t_menos_1 = D_t
+    PIB_t_menos_1 = PIB_t
 
 df_projecao = pd.DataFrame(resultados)
 
