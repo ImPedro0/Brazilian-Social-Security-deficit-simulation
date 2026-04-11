@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 
 from leitura_dados import df_inss, df_rgps, df_ibge
 
+#Valores fixos
+ano_calc_inicio = 2026
+ano_calc_fim = 2060
+
+#Intervalo a ser analisado
 ano_inicio = 2026
 ano_fim = 2060
 
@@ -57,7 +62,7 @@ limite_max = 0.75
 
 #Equações
 
-for ano in range(ano_inicio, ano_fim + 1):
+for ano in range(ano_calc_inicio, ano_calc_fim + 1):
     taxas_t = df_inss[df_inss.iloc[:, 0] == ano].iloc[0]
     
     Cms_t  = taxas_t['Taxa de Crescimento da Massa Salarial dos Contribuintes']
@@ -95,7 +100,14 @@ for ano in range(ano_inicio, ano_fim + 1):
     D_t_menos_1 = D_t
     PIB_t_menos_1 = PIB_t
 
-df_projecao = pd.DataFrame(resultados)
+df_projecao_completa = pd.DataFrame(resultados)
+
+#Recorte do período
+
+df_projecao = df_projecao_completa[
+    (df_projecao_completa['Ano'] >= ano_inicio) &
+    (df_projecao_completa['Ano'] <= ano_fim)
+].copy()
 
 #Gráficos
 
@@ -105,7 +117,7 @@ plt.figure(figsize=(14, 6))
 
 plt.subplot(1, 2, 1)
 plt.plot(df_projecao['Ano'], df_projecao['Deficit (NFin)'] / 1000000, marker='o', color='red', linewidth=2)
-plt.title('Projeção do Déficit do INSS (2026 - 2060)')
+plt.title(f'Projeção do Déficit do INSS ({ano_inicio} - {ano_fim})')
 plt.xlabel('Ano')
 plt.ylabel('Déficit (em R$ Trilhões)')
 plt.grid(True, linestyle='--', alpha=0.7)
@@ -115,7 +127,7 @@ plt.ticklabel_format(style='plain', axis='y')
 
 plt.subplot(1, 2, 2)
 plt.plot(df_projecao['Ano'], df_projecao['Deficit % PIB'], marker='s', color='darkorange', linewidth=2)
-plt.title('Déficit do INSS em % do PIB (2026 - 2060)')
+plt.title(f'Déficit do INSS em % do PIB ({ano_inicio} - {ano_fim})')
 plt.xlabel('Ano')
 plt.ylabel('% do PIB')
 plt.grid(True, linestyle='--', alpha=0.7)
