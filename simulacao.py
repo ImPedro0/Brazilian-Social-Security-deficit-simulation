@@ -2,24 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------------------------------------------------------------------------
-# ALTERNATIVA A (com choques correlacionados)
-#
-# O cenário-base (Receita, Despesa, PIB) é lido diretamente da Tabela 5.2 do
-# PLDO 2026. O Monte Carlo gera cenários alternativos em torno dessa
-# projeção oficial, perturbando R, D e PIB simultaneamente com choques
-# CORRELACIONADOS (via decomposição de Cholesky), em vez de choques
-# independentes.
-#
-# Por que correlacionar os choques?
-# Um choque de PIB negativo (recessão) não afeta Receita, Despesa e PIB de
-# forma independente: ele tende a reduzir a massa salarial (Receita cai
-# junto) e a pressionar a Despesa relativamente mais (efeito anticíclico).
-# Choques independentes ignoram essa dinâmica e subestimam o risco de
-# cenários em que tudo piora ao mesmo tempo (cauda do déficit).
-# ---------------------------------------------------------------------------
 
-df_rgps = pd.read_excel('tabela2_CCE002.xlsx', sheet_name='Projeções')
+df_rgps = pd.read_excel('tabela_CCE002.xlsx', sheet_name='Projeções')
 
 ano_calc_inicio = 2026
 ano_calc_fim = 2060
@@ -28,26 +12,10 @@ ano_base = 2025   # ano de referência para contagem do horizonte de incerteza
 df_base = df_rgps[(df_rgps['Exercício'] >= ano_base) & (df_rgps['Exercício'] <= ano_calc_fim)].copy()
 df_base = df_base.set_index('Exercício')
 
-# ---------------------------------------------------------------------------
-# Hipóteses do Monte Carlo (perturbações em torno do cenário oficial)
-#
-# ATENÇÃO PARA O TCC: estes desvios-padrão são HIPÓTESES DO AUTOR, e não uma
-# incerteza estatística estimada oficialmente pelo PLDO/SPE. O documento não
-# publica intervalo de confiança para sua própria projeção. No texto do
-# trabalho, este intervalo deve ser descrito como "análise de sensibilidade
-# sob hipóteses do autor sobre a variabilidade das premissas macroeconômicas",
-# nunca como "incerteza oficial do governo".
-#
-# sigma_frac_X é o desvio-padrão do choque relativo (%) de 1 ano de horizonte.
-# A incerteza acumulada em t anos à frente escala com sqrt(t) — mesma lógica
-# usada em "fan charts" de projeções macroeconômicas (ex.: relatórios de
-# inflação de bancos centrais): quanto mais distante no tempo, maior a
-# incerteza acumulada.
-# ---------------------------------------------------------------------------
 
 sigma_frac_R   = 0.010   # 1,0% ao ano de incerteza na Receita
 sigma_frac_D   = 0.008   # 0,8% ao ano de incerteza na Despesa (mais rígida/vegetativa)
-sigma_frac_PIB = 0.015   # 1,5% ao ano de incerteza no PIB (mais volátil)
+sigma_frac_PIB = 0.035  # 1,5% ao ano de incerteza no PIB (mais volátil)
 
 # Matriz de correlação entre os choques (ordem: R, D, PIB)
 #   R x PIB   = +0,6  -> Receita acompanha o ciclo do PIB (massa salarial)
