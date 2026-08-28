@@ -15,7 +15,7 @@ df_base = df_base.set_index('Exercício')
 
 sigma_frac_R   = 0.010   # 1,0% ao ano de incerteza na Receita
 sigma_frac_D   = 0.008   # 0,8% ao ano de incerteza na Despesa (mais rígida/vegetativa)
-sigma_frac_PIB = 0.035  # 1,5% ao ano de incerteza no PIB (mais volátil)
+sigma_frac_PIB = 0.0035  # 0,35% ao ano de incerteza no PIB (mais volátil)
 
 # Matriz de correlação entre os choques (ordem: R, D, PIB)
 #   R x PIB   = +0,6  -> Receita acompanha o ciclo do PIB (massa salarial)

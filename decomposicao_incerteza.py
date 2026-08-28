@@ -98,28 +98,48 @@ larg_D,   p5_D,   p95_D   = largura_ic90(resultado_D)
 larg_PIB, p5_PIB, p95_PIB = largura_ic90(resultado_PIB)
 larg_TOT, p5_TOT, p95_TOT = largura_ic90(resultado_TOT)
 
-print(f"Ano de referência: {ano_alvo}\n")
-print(f"{'Fonte':<20}{'Largura da faixa P5–P95 (pontos percentuais do PIB) em 2060':<22}{'Largura':<12}{'% da largura total (soma OAT)'}")
-soma_larguras = larg_R + larg_D + larg_PIB
-for nome, larg, p5, p95 in [
-    ('Receita (R)',  larg_R,   p5_R,   p95_R),
-    ('Despesa (D)',  larg_D,   p5_D,   p95_D),
-    ('PIB',          larg_PIB, p5_PIB, p95_PIB),
-]:
-    pct = larg / soma_larguras * 100
-    print(f"{nome:<20}[{p5:.2f}, {p95:.2f}]{'':<8}{larg:<12.3f}{pct:.1f}%")
-print(f"\n{'Cenário completo':<20}[{p5_TOT:.2f}, {p95_TOT:.2f}]{'':<8}{larg_TOT:<12.3f}(correlacionado, não é soma direta)")
+print(f"\nAno de referência: {ano_alvo}\n")
+print(f"Necessidade de Financiamento do RGPS (% do PIB) \n")
+print(f"{'Cenário':<25}{'P5':>10}{'P95':>10}{'Largura':>12}")
+print("-" * 60)
 
-# Gráfico de barras (tipo "tornado" simplificado)
+for nome, larg, p5, p95 in [
+    ('Somente Receita (R)',  larg_R,   p5_R,   p95_R),
+    ('Somente Despesa (D)', larg_D,   p5_D,   p95_D),
+    ('Somente PIB',         larg_PIB, p5_PIB, p95_PIB),
+    ('Cenário completo',    larg_TOT, p5_TOT, p95_TOT),
+]:
+    print(f"{nome:<25}{p5:>9.2f}%{p95:>9.2f}%{larg:>11.2f} p.p.")
+
+# Gráfico tipo "tornado": barra flutuante de p5 até p95, com a média marcada
 fig, ax = plt.subplots(figsize=(8,5))
-fontes = ['PIB', 'Despesa (D)', 'Receita (R)']
-larguras = [larg_PIB, larg_D, larg_R]
-cores = ['darkorange', 'firebrick', 'steelblue']
-ax.barh(fontes, larguras, color=cores)
-for i, v in enumerate(larguras):
-    ax.text(v + 0.02, i, f'{v:.2f} p.p.', va='center')
-ax.set_xlabel('Largura da faixa P5–P95 (pontos percentuais do PIB) em 2060')
-ax.set_title('Decomposição da incerteza por fonte de choque (one-at-a-time)')
+fontes   = ['PIB', 'Despesa (D)', 'Receita (R)']
+p5_vals  = [p5_PIB,  p5_D,  p5_R]
+p95_vals = [p95_PIB, p95_D, p95_R]
+medias   = [np.mean(resultado_PIB), np.mean(resultado_D), np.mean(resultado_R)]
+cores    = ['darkorange', 'firebrick', 'steelblue']
+
+y_pos = np.arange(len(fontes))
+larguras_barra = [p95 - p5 for p5, p95 in zip(p5_vals, p95_vals)]
+
+ax.barh(y_pos, larguras_barra, left=p5_vals, color=cores, alpha=0.6, height=0.5)
+ax.scatter(medias, y_pos, color='black', zorder=3, s=40, label='Média')
+
+for i, (p5, p95, m) in enumerate(zip(p5_vals, p95_vals, medias)):
+    ax.text(p5 - 0.05, i, f'P5: {p5:.2f}', va='center', ha='right', fontsize=9)
+    ax.text(p95 + 0.05, i, f'P95: {p95:.2f}', va='center', ha='left', fontsize=9)
+
+ax.set_yticks(y_pos)
+ax.set_yticklabels(fontes)
+ax.set_xlabel('Necessidade de Financiamento % PIB em 2060')
+ax.set_title('Decomposição da incerteza (Faixa P5–P95) isolado por variável')
 ax.grid(True, axis='x', linestyle='--', alpha=0.6)
+ax.legend(loc='lower right')
+
+# margem extra nas laterais para os rótulos P5/P95 não colidirem com o eixo Y
+xmin = min(p5_vals) - 0.6
+xmax = max(p95_vals) + 0.6
+ax.set_xlim(xmin, xmax)
+
 plt.tight_layout()
 plt.savefig('decomposicao_incerteza.png', dpi=150, bbox_inches='tight')
