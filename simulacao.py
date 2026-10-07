@@ -7,22 +7,16 @@ df_rgps = pd.read_excel('tabela_CCE002.xlsx', sheet_name='Projeções')
 
 ano_calc_inicio = 2026
 ano_calc_fim = 2060
-ano_base = 2025   # ano de referência para contagem do horizonte de incerteza
+ano_base = 2025   # ano-base
 
 df_base = df_rgps[(df_rgps['Exercício'] >= ano_base) & (df_rgps['Exercício'] <= ano_calc_fim)].copy()
 df_base = df_base.set_index('Exercício')
 
 
 sigma_frac_R   = 0.010   # 1,0% ao ano de incerteza na Receita
-sigma_frac_D   = 0.008   # 0,8% ao ano de incerteza na Despesa (mais rígida/vegetativa)
-sigma_frac_PIB = 0.0035  # 0,35% ao ano de incerteza no PIB (mais volátil)
+sigma_frac_D   = 0.008   # 0,8% ao ano de incerteza na Despesa
+sigma_frac_PIB = 0.0035  # 0,35% ao ano de incerteza no PIB
 
-# Matriz de correlação entre os choques (ordem: R, D, PIB)
-#   R x PIB   = +0,6  -> Receita acompanha o ciclo do PIB (massa salarial)
-#   D x PIB   = -0,3  -> Despesa relativamente mais pressionada quando o
-#                        PIB é mais fraco (efeito anticíclico)
-#   R x D     = -0,2  -> quando a Receita surpreende para cima, a Despesa
-#                        tende a ficar relativamente mais controlada
 corr = np.array([
     [ 1.0, -0.2,  0.6],   # R
     [-0.2,  1.0, -0.3],   # D
@@ -31,12 +25,10 @@ corr = np.array([
  
 sigma = np.array([sigma_frac_R, sigma_frac_D, sigma_frac_PIB])
  
-# Matriz de covariância para horizonte de 1 ano: Sigma = D * Corr * D
+# Matriz de covariância
 Sigma_base = np.outer(sigma, sigma) * corr
  
-# Decomposição de Cholesky: Sigma_base = L @ L.T
-# (permite gerar vetores normais correlacionados a partir de ruído branco:
-#  se z ~ N(0, I), então L @ z ~ N(0, Sigma_base))
+# Decomposição de Cholesky
 L_base = np.linalg.cholesky(Sigma_base)
 
 num_simulacoes = 1000
@@ -52,16 +44,15 @@ for simulacao in range(num_simulacoes):
         D_pldo   = df_base.loc[ano, 'Despesa']
         PIB_pldo = df_base.loc[ano, 'PIB']
  
-        horizonte = ano - ano_base   # anos à frente do ano-base (2025)
+        horizonte = ano - ano_base   # anos à frente do ano-base
  
-        # Ruído branco padrão (3 variáveis independentes, N(0,1))
         z = rng.standard_normal(3)
  
-        # Correlaciona via Cholesky e escala pelo horizonte:
-        # Sigma_t = horizonte * Sigma_base  =>  L_t = sqrt(horizonte) * L_base
+        # Correlaciona via Cholesky e escala pelo horizonte
+        
         eps_R, eps_D, eps_PIB = np.sqrt(horizonte) * (L_base @ z)
  
-        R_sim   = R_pldo   * (1 + eps_R)
+        R_sim   = R_pldo   * (1 + eps_R) 
         D_sim   = D_pldo   * (1 + eps_D)
         PIB_sim = PIB_pldo * (1 + eps_PIB)
  
