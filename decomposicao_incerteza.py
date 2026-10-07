@@ -4,26 +4,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# ---------------------------------------------------------------------------
-# DECOMPOSIÇÃO DA INCERTEZA (One-At-a-Time / OAT)
-#
-# Objetivo: identificar quanto da largura do IC 90% da "Necessidade de
-# Financiamento % PIB" em 2060 vem de cada fonte de choque (R, D, PIB),
-# isoladamente.
-#
-# Método: roda o MESMO Monte Carlo do modelo principal, mas em 4 variantes:
-#   1) Só eps_R  ativo (eps_D = eps_PIB = 0)
-#   2) Só eps_D  ativo (eps_R = eps_PIB = 0)
-#   3) Só eps_PIB ativo (eps_R = eps_D = 0)
-#   4) TODOS ativos e correlacionados (Cholesky) -> cenário completo (baseline)
-#
-# Comparando a largura do IC 90% de cada variante isolada com a do cenário
-# completo, mede-se a contribuição relativa de cada fonte para a incerteza
-# total. É uma análise de sensibilidade "um fator de cada vez", mais simples
-# que uma decomposição de variância de Sobol, mas suficiente para apontar
-# qual variável domina o risco no TCC.
-# ---------------------------------------------------------------------------
-
 df_rgps = pd.read_excel('tabela_CCE002.xlsx', sheet_name='Projeções')
 
 ano_calc_inicio = 2026
@@ -83,7 +63,6 @@ def rodar_simulacao(ativa_R, ativa_D, ativa_PIB, correlacionado, seed):
 
     return np.array(resultados)
 
-# 4 cenários: cada fonte isolada + o cenário completo (correlacionado) como referência
 resultado_R   = rodar_simulacao(True,  False, False, correlacionado=False, seed=1)
 resultado_D   = rodar_simulacao(False, True,  False, correlacionado=False, seed=2)
 resultado_PIB = rodar_simulacao(False, False, True,  correlacionado=False, seed=3)
@@ -111,7 +90,7 @@ for nome, larg, p5, p95 in [
 ]:
     print(f"{nome:<25}{p5:>9.2f}%{p95:>9.2f}%{larg:>11.2f} p.p.")
 
-# Gráfico tipo "tornado": barra flutuante de p5 até p95, com a média marcada
+# Gráfico
 fig, ax = plt.subplots(figsize=(8,5))
 fontes   = ['PIB', 'Despesa (D)', 'Receita (R)']
 p5_vals  = [p5_PIB,  p5_D,  p5_R]
@@ -136,7 +115,6 @@ ax.set_title('Decomposição da incerteza (Faixa P5–P95) isolado por variável
 ax.grid(True, axis='x', linestyle='--', alpha=0.6)
 ax.legend(loc='lower right')
 
-# margem extra nas laterais para os rótulos P5/P95 não colidirem com o eixo Y
 xmin = min(p5_vals) - 0.6
 xmax = max(p95_vals) + 0.6
 ax.set_xlim(xmin, xmax)
